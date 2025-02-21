@@ -37,7 +37,7 @@ router.post(
         id: user.id,
         email: user.email,
       },
-      process.env.JWT_KEY!
+      process.env.JWT_KEY!,
     )
 
     req.session = {
@@ -45,7 +45,7 @@ router.post(
     }
 
     res.status(201).send(user)
-  }
+  },
 )
 
 export { router as signupRouter }

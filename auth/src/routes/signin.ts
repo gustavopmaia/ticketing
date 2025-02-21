@@ -22,7 +22,10 @@ router.post(
       throw new BadRequestError('Invalid credentials')
     }
 
-    const passwordsMatch = await Password.compare(existingUser.password, password)
+    const passwordsMatch = await Password.compare(
+      existingUser.password,
+      password,
+    )
     if (!passwordsMatch) {
       throw new BadRequestError('Invalid credentials')
     }
@@ -32,7 +35,7 @@ router.post(
         id: existingUser.id,
         email: existingUser.email,
       },
-      process.env.JWT_KEY!
+      process.env.JWT_KEY!,
     )
 
     req.session = {
@@ -40,7 +43,7 @@ router.post(
     }
 
     res.status(200).send(existingUser)
-  }
+  },
 )
 
 export { router as signinRouter }
