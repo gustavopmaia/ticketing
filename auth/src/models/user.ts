@@ -6,7 +6,7 @@ interface UserAttrs {
   password: string
 }
 
-interface UserModel extends mongoose.Model<any> {
+interface UserModel extends mongoose.Model<UserDoc> {
   build(attrs: UserAttrs): UserDoc
 }
 
