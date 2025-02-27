@@ -9,7 +9,7 @@ A aplicação é composta por vários serviços, cada um responsável por uma fu
 - **Auth**: Gerencia a autenticação e autorização de usuários.
 - **Tickets**: Lida com a criação, atualização e exclusão de ingressos.
 - **Orders**: Gerencia as ordens de compra de ingressos.
-- **Client**: Frontend da aplicação, desenvolvido em React, que interage com os serviços backend.
+- **Client**: Frontend da aplicação, desenvolvido em NextJS, utilizando SSR (Server-side rendering) para renderizar as página de forma mais rápida e eficiente.
 
 A comunicação entre os serviços é realizada através do **NATS Streaming**, garantindo a entrega confiável de mensagens.
 
