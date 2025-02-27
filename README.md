@@ -71,7 +71,13 @@ Antes de iniciar, certifique-se de ter instalado em sua máquina:
 
 ## Variáveis de Ambiente
 
-Cada serviço possui variáveis de ambiente específicas que precisam ser configuradas. Por exemplo, o serviço de autenticação (`auth`) requer uma chave JWT para assinatura de tokens. Certifique-se de definir todas as variáveis necessárias antes de iniciar os serviços.
+Cada serviço possui variáveis de ambiente específicas que precisam ser configuradas. As principais variáveis de ambiente são:
+
+- `NATS_URL`: URL do servidor NATS.
+- `NATS_CLUSTER_ID`: ID do cluster NATS.
+- `NATS_CLIENT_ID`: ID do cliente NATS (gerado automaticamente pelo Kubernetes).
+- `JWT_KEY`: Chave secreta para assinatura dos tokens JWT.
+- `MONGO_URI`: URI do banco de dados MongoDB.
 
 ## Documentação das Rotas
 
