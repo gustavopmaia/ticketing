@@ -17,6 +17,7 @@ A comunicação entre os serviços é realizada através do **NATS Streaming**, 
 
 - **Backend**: Node.js com TypeScript.
 - **Frontend**: React com Next.js.
+- **Banco de Dados**: MongoDB para todos os serviços.
 - **Mensageria**: NATS Streaming Server.
 - **Orquestração**: Kubernetes para gerenciamento de contêineres.
 - **Empacotamento**: Docker para criação de imagens dos serviços.
@@ -72,10 +73,120 @@ Antes de iniciar, certifique-se de ter instalado em sua máquina:
 
 Cada serviço possui variáveis de ambiente específicas que precisam ser configuradas. Por exemplo, o serviço de autenticação (`auth`) requer uma chave JWT para assinatura de tokens. Certifique-se de definir todas as variáveis necessárias antes de iniciar os serviços.
 
-## Scripts Úteis
+## Documentação das Rotas
 
-- **startup.sh**: Script para inicializar os serviços e configurar o ambiente automaticamente. Para executá-lo:
+### **Auth Service**
 
-  ```bash
-  ./startup.sh
+#### **Registrar Usuário**
+
+- **Método:** `POST`
+- **URL:** `/api/users/signup`
+- **Body (JSON):**
+  ```json
+  {
+    "email": "usuario@example.com",
+    "password": "senha123"
+  }
   ```
+- **Resposta:**
+  ```json
+  {
+    "id": "user123",
+    "email": "usuario@example.com",
+    "token": "jwt-token"
+  }
+  ```
+
+#### **Login**
+
+- **Método:** `POST`
+- **URL:** `/api/users/signin`
+- **Body (JSON):**
+  ```json
+  {
+    "email": "usuario@example.com",
+    "password": "senha123"
+  }
+  ```
+
+---
+
+### **Tickets Service**
+
+#### **Criar Ingresso**
+
+- **Método:** `POST`
+- **URL:** `/api/tickets`
+- **Body (JSON):**
+  ```json
+  {
+    "title": "Show do Coldplay",
+    "price": 250
+  }
+  ```
+- **Resposta:**
+  ```json
+  {
+    "id": "abc123",
+    "title": "Show do Coldplay",
+    "price": 250,
+    "userId": "user123"
+  }
+  ```
+
+#### **Listar Ingressos**
+
+- **Método:** `GET`
+- **URL:** `/api/tickets`
+- **Resposta:**
+  ```json
+  [
+    {
+      "id": "abc123",
+      "title": "Show do Coldplay",
+      "price": 250
+    },
+    {
+      "id": "def456",
+      "title": "Teatro Stand-Up",
+      "price": 100
+    }
+  ]
+  ```
+
+#### **Buscar Ingresso por ID**
+
+- **Método:** `GET`
+- **URL:** `/api/tickets/:id`
+
+#### **Atualizar Ingresso**
+
+- **Método:** `PUT`
+- **URL:** `/api/tickets/:id`
+- **Body (JSON):**
+  ```json
+  {
+    "title": "Show do U2",
+    "price": 300
+  }
+  ```
+
+---
+
+### **Orders Service**
+
+#### **Criar Pedido**
+
+- **Método:** `POST`
+- **URL:** `/api/orders`
+- **Body (JSON):**
+  ```json
+  {
+    "ticketId": "abc123"
+  }
+  ```
+
+#### **Listar Pedidos**
+
+- **Método:** `GET`
+- **URL:** `/api/orders`
