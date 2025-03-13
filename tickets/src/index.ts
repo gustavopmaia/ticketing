@@ -21,6 +21,8 @@ const start = async () => {
     throw new Error('NATS_CLUSTER_ID must be defined')
   }
 
+  console.log('Setting up Tickets')
+
   try {
     await natsWrapper.connect(
       process.env.NATS_CLUSTER_ID,
