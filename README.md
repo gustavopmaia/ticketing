@@ -1,198 +1,141 @@
-# Ticketing - Aplicação de Microserviços
+# 🎟️ Ticketing — Aplicação de Microserviços (Node.js + TypeScript)
 
-Este projeto é uma aplicação de gerenciamento de ingressos desenvolvida com uma arquitetura de microserviços. O objetivo é fornecer uma plataforma escalável e resiliente para a venda e administração de ingressos.
+Aplicação de gerenciamento e venda de ingressos construída com arquitetura de microserviços, comunicação orientada a eventos e deploy em Kubernetes.  
+O foco do projeto é demonstrar **design de serviços**, **consistência**, **escalabilidade** e **resiliência** em sistemas distribuídos.
 
-## Arquitetura
+---
 
-A aplicação é composta por vários serviços, cada um responsável por uma funcionalidade específica:
+## 🧭 Visão Geral
+A plataforma é composta por serviços independentes, cada um com seu próprio banco de dados (MongoDB) e responsabilidades bem definidas.  
+A comunicação entre serviços ocorre via **NATS Streaming (event-driven)**, reduzindo acoplamento e facilitando evolução do sistema.
 
-- **Auth**: Gerencia a autenticação e autorização de usuários.
-- **Tickets**: Lida com a criação, atualização e exclusão de ingressos.
-- **Orders**: Gerencia as ordens de compra de ingressos.
-- **Client**: Frontend da aplicação, desenvolvido em React, que interage com os serviços backend.
+---
 
-A comunicação entre os serviços é realizada através do **NATS Streaming**, garantindo a entrega confiável de mensagens.
+## 🧩 Arquitetura
 
-## Tecnologias Utilizadas
+### Serviços
+- **Auth Service**  
+  Responsável por autenticação e autorização de usuários, emissão e validação de JWT.
 
-- **Backend**: Node.js com TypeScript.
-- **Frontend**: React com Next.js.
-- **Banco de Dados**: MongoDB para todos os serviços.
-- **Mensageria**: NATS Streaming Server.
-- **Orquestração**: Kubernetes para gerenciamento de contêineres.
-- **Empacotamento**: Docker para criação de imagens dos serviços.
+- **Tickets Service**  
+  Gerenciamento de ingressos (criação, atualização, listagem e consulta).
 
-## Pré-requisitos
+- **Orders Service**  
+  Gerenciamento de ordens de compra e reserva de ingressos.
 
-Antes de iniciar, certifique-se de ter instalado em sua máquina:
+- **Client (Frontend)**  
+  Aplicação frontend em **React + Next.js**, responsável pela interação com os serviços backend.
 
+### Comunicação
+- **Síncrona:** HTTP/REST para comandos e consultas.
+- **Assíncrona:** Eventos via **NATS Streaming**, garantindo desacoplamento e confiabilidade entre serviços.
+
+---
+
+## ✅ Principais decisões técnicas
+- Arquitetura **orientada a eventos** para reduzir dependências diretas entre serviços.
+- **Database per service** (MongoDB isolado por serviço).
+- **JWT** para autenticação e propagação de identidade.
+- **Kubernetes + Skaffold** para fluxo de desenvolvimento local próximo ao ambiente produtivo.
+- **Docker** para empacotamento e portabilidade dos serviços.
+
+---
+
+## 🛠️ Stack Tecnológica
+- **Backend:** Node.js + TypeScript  
+- **Frontend:** React + Next.js  
+- **Banco de Dados:** MongoDB  
+- **Mensageria:** NATS Streaming Server  
+- **Orquestração:** Kubernetes  
+- **Dev Workflow:** Skaffold  
+- **Containerização:** Docker  
+
+---
+
+## 🚀 Como executar localmente (Kubernetes + Skaffold)
+
+### Pré-requisitos
 - Docker
-- Kubernetes
+- Kubernetes (Docker Desktop ou Minikube)
+- kubectl
 - Skaffold
 
-## Configuração do Ambiente
+### 1️⃣ Clonar o repositório
+```bash
+git clone https://github.com/gustavopmaia/ticketing.git
+cd ticketing
+```
 
-1. **Clone o repositório**:
+### 2️⃣ Configurar domínio local
 
-   ```bash
-   git clone https://github.com/gustavopmaia/ticketing.git
-   cd ticketing
-   ```
+Adicione no arquivo `/etc/hosts`:
 
-2. **Atualize o arquivo `/etc/hosts`**:
+```
+127.0.0.1 ticketing.dev
+```
 
-   Adicione a seguinte linha para mapear o domínio local:
+### 3️⃣ Instalar Ingress-NGINX
 
-   ```
-   127.0.0.1 ticketing.dev
-   ```
+```bash
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/cloud/deploy.yaml
+```
 
-3. **Instale o Ingress-NGINX**:
+### 4️⃣ Subir a aplicação
 
-   O Ingress-NGINX é utilizado para gerenciar o tráfego externo para os serviços dentro do cluster Kubernetes. Para instalá-lo, execute:
+```bash
+skaffold dev
+```
 
-   ```bash
-   kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/cloud/deploy.yaml
-   ```
+Após a inicialização, a aplicação estará disponível em:
 
-   Se encontrar erros relacionados ao `ingress-nginx-admission`, execute:
-
-   ```bash
-   kubectl delete -A ValidatingWebhookConfiguration ingress-nginx-admission
-   ```
-
-4. **Inicie o Skaffold**:
-
-   O Skaffold facilitará o desenvolvimento contínuo, gerenciando o ciclo de vida dos aplicativos Kubernetes. Para iniciá-lo, execute:
-
-   ```bash
-   skaffold dev
-   ```
-
-## Variáveis de Ambiente
-
-Cada serviço possui variáveis de ambiente específicas que precisam ser configuradas. As principais variáveis de ambiente são:
-
-- `NATS_URL`: URL do servidor NATS.
-- `NATS_CLUSTER_ID`: ID do cluster NATS.
-- `NATS_CLIENT_ID`: ID do cliente NATS (gerado automaticamente pelo Kubernetes).
-- `JWT_KEY`: Chave secreta para assinatura dos tokens JWT.
-- `MONGO_URI`: URI do banco de dados MongoDB.
-
-## Documentação das Rotas
-
-### **Auth Service**
-
-#### **Registrar Usuário**
-
-- **Método:** `POST`
-- **URL:** `/api/users/signup`
-- **Body (JSON):**
-  ```json
-  {
-    "email": "usuario@example.com",
-    "password": "senha123"
-  }
-  ```
-- **Resposta:**
-  ```json
-  {
-    "id": "user123",
-    "email": "usuario@example.com",
-    "token": "jwt-token"
-  }
-  ```
-
-#### **Login**
-
-- **Método:** `POST`
-- **URL:** `/api/users/signin`
-- **Body (JSON):**
-  ```json
-  {
-    "email": "usuario@example.com",
-    "password": "senha123"
-  }
-  ```
+* **[http://ticketing.dev](http://ticketing.dev)**
 
 ---
 
-### **Tickets Service**
+## 🔐 Variáveis de Ambiente
 
-#### **Criar Ingresso**
+As variáveis são configuradas via **Kubernetes Secrets / Manifests** por serviço.
 
-- **Método:** `POST`
-- **URL:** `/api/tickets`
-- **Body (JSON):**
-  ```json
-  {
-    "title": "Show do Coldplay",
-    "price": 250
-  }
-  ```
-- **Resposta:**
-  ```json
-  {
-    "id": "abc123",
-    "title": "Show do Coldplay",
-    "price": 250,
-    "userId": "user123"
-  }
-  ```
+Principais variáveis:
 
-#### **Listar Ingressos**
-
-- **Método:** `GET`
-- **URL:** `/api/tickets`
-- **Resposta:**
-  ```json
-  [
-    {
-      "id": "abc123",
-      "title": "Show do Coldplay",
-      "price": 250
-    },
-    {
-      "id": "def456",
-      "title": "Teatro Stand-Up",
-      "price": 100
-    }
-  ]
-  ```
-
-#### **Buscar Ingresso por ID**
-
-- **Método:** `GET`
-- **URL:** `/api/tickets/:id`
-
-#### **Atualizar Ingresso**
-
-- **Método:** `PUT`
-- **URL:** `/api/tickets/:id`
-- **Body (JSON):**
-  ```json
-  {
-    "title": "Show do U2",
-    "price": 300
-  }
-  ```
+* `JWT_KEY` — chave secreta para assinatura de tokens JWT
+* `MONGO_URI` — URI do MongoDB do serviço
+* `NATS_URL` — URL do servidor NATS
+* `NATS_CLUSTER_ID` — ID do cluster NATS
+* `NATS_CLIENT_ID` — ID do cliente (gerado automaticamente no Kubernetes)
 
 ---
 
-### **Orders Service**
+## 📚 Documentação de API (Resumo)
 
-#### **Criar Pedido**
+### Auth Service
 
-- **Método:** `POST`
-- **URL:** `/api/orders`
-- **Body (JSON):**
-  ```json
-  {
-    "ticketId": "abc123"
-  }
-  ```
+* **POST** `/api/users/signup` — registro de usuário
+* **POST** `/api/users/signin` — login de usuário
 
-#### **Listar Pedidos**
+### Tickets Service
 
-- **Método:** `GET`
-- **URL:** `/api/orders`
+* **POST** `/api/tickets` — criar ingresso
+* **GET** `/api/tickets` — listar ingressos
+* **GET** `/api/tickets/:id` — buscar ingresso por ID
+* **PUT** `/api/tickets/:id` — atualizar ingresso
+
+### Orders Service
+
+* **POST** `/api/orders` — criar pedido
+* **GET** `/api/orders` — listar pedidos
+
+---
+
+## 🧪 Próximos passos / Roadmap
+
+* Testes automatizados por serviço (unitários e integração)
+* Observabilidade (logs estruturados e métricas)
+* Políticas de retry e tratamento de falhas em eventos
+* Evolução do fluxo de compra (pagamentos, cancelamentos)
+
+---
+
+## 📌 Sobre o projeto
+
+Projeto educacional com foco em **arquitetura de microserviços**, **mensageria** e **boas práticas de backend** utilizando Node.js e TypeScript.
