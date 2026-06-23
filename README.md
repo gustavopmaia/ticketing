@@ -1,141 +1,179 @@
-# 🎟️ Ticketing — Aplicação de Microserviços (Node.js + TypeScript)
-
-Aplicação de gerenciamento e venda de ingressos construída com arquitetura de microserviços, comunicação orientada a eventos e deploy em Kubernetes.  
-O foco do projeto é demonstrar **design de serviços**, **consistência**, **escalabilidade** e **resiliência** em sistemas distribuídos.
-
+# 🎟️ Ticketing — Event-Driven Microservices Platform
+ 
+A distributed ticketing and sales platform built with a microservices architecture, event-driven communication, and production-grade infrastructure. The project focuses on **service design**, **data consistency**, **scalability**, and **resilience** in distributed systems.
+ 
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat&logo=typescript&logoColor=white)
+![Node.js](https://img.shields.io/badge/Node.js-339933?style=flat&logo=node.js&logoColor=white)
+![Kubernetes](https://img.shields.io/badge/Kubernetes-326CE5?style=flat&logo=kubernetes&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat&logo=docker&logoColor=white)
+![NATS](https://img.shields.io/badge/NATS-27AAE1?style=flat&logo=natsdotio&logoColor=white)
+ 
 ---
-
-## 🧭 Visão Geral
-A plataforma é composta por serviços independentes, cada um com seu próprio banco de dados (MongoDB) e responsabilidades bem definidas.  
-A comunicação entre serviços ocorre via **NATS Streaming (event-driven)**, reduzindo acoplamento e facilitando evolução do sistema.
-
+ 
+## Overview
+ 
+The platform is composed of independent services, each owning its own database (MongoDB) with clearly defined responsibilities. Inter-service communication uses **NATS Streaming (event-driven)**, reducing coupling and enabling independent evolution of each service.
+ 
 ---
-
-## 🧩 Arquitetura
-
-### Serviços
-- **Auth Service**  
-  Responsável por autenticação e autorização de usuários, emissão e validação de JWT.
-
-- **Tickets Service**  
-  Gerenciamento de ingressos (criação, atualização, listagem e consulta).
-
-- **Orders Service**  
-  Gerenciamento de ordens de compra e reserva de ingressos.
-
-- **Client (Frontend)**  
-  Aplicação frontend em **React + Next.js**, responsável pela interação com os serviços backend.
-
-### Comunicação
-- **Síncrona:** HTTP/REST para comandos e consultas.
-- **Assíncrona:** Eventos via **NATS Streaming**, garantindo desacoplamento e confiabilidade entre serviços.
-
+ 
+## Architecture
+ 
+Each service is independently deployable, with its own MongoDB instance and event contracts defined in a shared `common` package.
+ 
+```
+┌──────────────────────────────────────────────────────┐
+│                    Ingress (NGINX)                   │
+└────────────┬──────────────┬──────────────┬───────────┘
+             │              │              │
+        ┌────▼────┐   ┌─────▼────┐  ┌─────▼────┐
+        │  Auth   │   │ Tickets  │  │  Orders  │
+        │ Service │   │ Service  │  │ Service  │
+        └────┬────┘   └─────┬────┘  └─────┬────┘
+             │              │              │
+             └──────────────▼──────────────┘
+                     NATS Streaming
+                    (Event Bus)
+                          │
+                   ┌──────▼──────┐
+                   │  Expiration │
+                   │   Service   │
+                   └─────────────┘
+```
+ 
+### Services
+ 
+| Service | Responsibility |
+|---|---|
+| **Auth** | User authentication and authorization, JWT issuance and validation |
+| **Tickets** | Ticket lifecycle management — create, update, list, and query |
+| **Orders** | Purchase order management and ticket reservation |
+| **Payments** | Payment processing and order fulfillment |
+| **Expiration** | Order expiration via delayed event scheduling |
+| **Client** | Next.js frontend consuming the backend services |
+ 
+### Communication
+ 
+- **Synchronous:** HTTP/REST for commands and queries
+- **Asynchronous:** Events via NATS Streaming, ensuring decoupling and reliability across services
 ---
-
-## ✅ Principais decisões técnicas
-- Arquitetura **orientada a eventos** para reduzir dependências diretas entre serviços.
-- **Database per service** (MongoDB isolado por serviço).
-- **JWT** para autenticação e propagação de identidade.
-- **Kubernetes + Skaffold** para fluxo de desenvolvimento local próximo ao ambiente produtivo.
-- **Docker** para empacotamento e portabilidade dos serviços.
-
+ 
+## Key Technical Decisions
+ 
+- **Event-driven architecture** to eliminate direct dependencies between services
+- **Database-per-service** pattern (isolated MongoDB per service) for independent scalability
+- **JWT** for authentication and identity propagation across service boundaries
+- **Optimistic concurrency control** to handle out-of-order events correctly
+- **Kubernetes + Skaffold** for a local dev workflow that mirrors production
+- **Docker** for packaging and portability
 ---
-
-## 🛠️ Stack Tecnológica
-- **Backend:** Node.js + TypeScript  
-- **Frontend:** React + Next.js  
-- **Banco de Dados:** MongoDB  
-- **Mensageria:** NATS Streaming Server  
-- **Orquestração:** Kubernetes  
-- **Dev Workflow:** Skaffold  
-- **Containerização:** Docker  
-
+ 
+## Tech Stack
+ 
+| Layer | Technology |
+|---|---|
+| Backend | Node.js, TypeScript |
+| Frontend | React, Next.js |
+| Database | MongoDB (per service) |
+| Messaging | NATS Streaming Server |
+| Orchestration | Kubernetes |
+| Dev Workflow | Skaffold |
+| Containerization | Docker |
+| CI/CD | GitHub Actions |
+ 
 ---
-
-## 🚀 Como executar localmente (Kubernetes + Skaffold)
-
-### Pré-requisitos
+ 
+## Running Locally
+ 
+### Prerequisites
+ 
 - Docker
-- Kubernetes (Docker Desktop ou Minikube)
-- kubectl
+- Kubernetes (Docker Desktop or Minikube)
+- `kubectl`
 - Skaffold
-
-### 1️⃣ Clonar o repositório
+### 1. Clone the repository
+ 
 ```bash
 git clone https://github.com/gustavopmaia/ticketing.git
 cd ticketing
 ```
-
-### 2️⃣ Configurar domínio local
-
-Adicione no arquivo `/etc/hosts`:
-
+ 
+### 2. Configure local domain
+ 
+Add the following entry to your `/etc/hosts` file:
+ 
 ```
 127.0.0.1 ticketing.dev
 ```
-
-### 3️⃣ Instalar Ingress-NGINX
-
+ 
+### 3. Install Ingress-NGINX
+ 
 ```bash
 kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/cloud/deploy.yaml
 ```
-
-### 4️⃣ Subir a aplicação
-
+ 
+### 4. Create required secrets
+ 
+```bash
+kubectl create secret generic jwt-secret --from-literal=JWT_KEY=your_jwt_secret
+kubectl create secret generic stripe-secret --from-literal=STRIPE_KEY=your_stripe_key
+```
+ 
+### 5. Start the application
+ 
 ```bash
 skaffold dev
 ```
-
-Após a inicialização, a aplicação estará disponível em:
-
-* **[http://ticketing.dev](http://ticketing.dev)**
-
+ 
+The app will be available at **http://ticketing.dev**
+ 
 ---
-
-## 🔐 Variáveis de Ambiente
-
-As variáveis são configuradas via **Kubernetes Secrets / Manifests** por serviço.
-
-Principais variáveis:
-
-* `JWT_KEY` — chave secreta para assinatura de tokens JWT
-* `MONGO_URI` — URI do MongoDB do serviço
-* `NATS_URL` — URL do servidor NATS
-* `NATS_CLUSTER_ID` — ID do cluster NATS
-* `NATS_CLIENT_ID` — ID do cliente (gerado automaticamente no Kubernetes)
-
+ 
+## Environment Variables
+ 
+Secrets and configuration are managed via Kubernetes Secrets and ConfigMaps per service.
+ 
+| Variable | Description |
+|---|---|
+| `JWT_KEY` | Secret key for JWT signing |
+| `MONGO_URI` | MongoDB connection URI for each service |
+| `NATS_URL` | NATS Streaming server URL |
+| `NATS_CLUSTER_ID` | NATS cluster ID |
+| `NATS_CLIENT_ID` | Client ID (auto-generated in Kubernetes) |
+| `STRIPE_KEY` | Stripe API key (payments service) |
+ 
 ---
-
-## 📚 Documentação de API (Resumo)
-
+ 
+## API Reference
+ 
 ### Auth Service
-
-* **POST** `/api/users/signup` — registro de usuário
-* **POST** `/api/users/signin` — login de usuário
-
+ 
+| Method | Route | Description |
+|---|---|---|
+| POST | `/api/users/signup` | Register a new user |
+| POST | `/api/users/signin` | Authenticate and receive JWT |
+| POST | `/api/users/signout` | Invalidate session |
+| GET | `/api/users/currentuser` | Return the current authenticated user |
+ 
 ### Tickets Service
-
-* **POST** `/api/tickets` — criar ingresso
-* **GET** `/api/tickets` — listar ingressos
-* **GET** `/api/tickets/:id` — buscar ingresso por ID
-* **PUT** `/api/tickets/:id` — atualizar ingresso
-
+ 
+| Method | Route | Description |
+|---|---|---|
+| POST | `/api/tickets` | Create a ticket |
+| GET | `/api/tickets` | List all tickets |
+| GET | `/api/tickets/:id` | Fetch a ticket by ID |
+| PUT | `/api/tickets/:id` | Update a ticket |
+ 
 ### Orders Service
-
-* **POST** `/api/orders` — criar pedido
-* **GET** `/api/orders` — listar pedidos
-
+ 
+| Method | Route | Description |
+|---|---|---|
+| POST | `/api/orders` | Place an order |
+| GET | `/api/orders` | List all orders for the current user |
+| GET | `/api/orders/:id` | Fetch an order by ID |
+| DELETE | `/api/orders/:id` | Cancel an order |
+ 
 ---
-
-## 🧪 Próximos passos / Roadmap
-
-* Testes automatizados por serviço (unitários e integração)
-* Observabilidade (logs estruturados e métricas)
-* Políticas de retry e tratamento de falhas em eventos
-* Evolução do fluxo de compra (pagamentos, cancelamentos)
-
----
-
-## 📌 Sobre o projeto
-
-Projeto educacional com foco em **arquitetura de microserviços**, **mensageria** e **boas práticas de backend** utilizando Node.js e TypeScript.
+ 
+## CI/CD
+ 
+The repository includes GitHub Actions workflows for automated testing and deployment. On every push, the pipeline runs tests across all services before building and pushing Docker images.
